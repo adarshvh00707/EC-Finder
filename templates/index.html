@@ -4,20 +4,23 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EV ChargeFinder | Smart Charging</title>
+    <title>EV ChargeFinder</title>
+
+    <!-- Cytoscape.js for interactive graph visualization -->
+    <script src="https://unpkg.com/cytoscape/dist/cytoscape.min.js"></script>
 
     <style>
         :root {
             --bg: #0b1120;
             --panel: #121b2d;
-            --panel-light: #18243a;
+            --panel2: #18243a;
             --border: #28364d;
             --text: #edf4ff;
             --muted: #91a2bb;
             --green: #9af56b;
             --green-dark: #203b2b;
             --blue: #70b8ff;
-            --radius: 18px;
+            --red: #ff8585;
         }
 
         * {
@@ -28,8 +31,7 @@
             margin: 0;
             background: var(--bg);
             color: var(--text);
-            font-family: Inter, "Segoe UI", Arial, sans-serif;
-            font-size: 14px;
+            font-family: "Segoe UI", Arial, sans-serif;
             line-height: 1.6;
         }
 
@@ -47,8 +49,8 @@
             display: flex;
             justify-content: space-between;
             align-items: center;
-            gap: 20px;
-            padding-bottom: 25px;
+            gap: 16px;
+            padding-bottom: 24px;
             border-bottom: 1px solid var(--border);
         }
 
@@ -61,42 +63,39 @@
         .brand-icon {
             display: grid;
             place-items: center;
-            width: 46px;
-            height: 46px;
-            border-radius: 14px;
+            width: 48px;
+            height: 48px;
             background: var(--green);
             color: #102016;
-            font-size: 25px;
+            border-radius: 14px;
+            font-size: 28px;
+        }
+
+        h1, h2, h3, h4, p {
+            margin-top: 0;
         }
 
         .brand h1 {
-            margin: 0;
             font-size: 20px;
-            letter-spacing: -0.5px;
+            margin-bottom: 0;
         }
 
-        .brand p {
+        .brand p, .muted {
+            color: var(--muted);
+            font-size: 12px;
             margin: 2px 0 0;
-            color: var(--muted);
-            font-size: 12px;
         }
 
-        .live {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            border: 1px solid var(--border);
-            padding: 8px 12px;
+        .demo-badge, .count-pill {
             border-radius: 30px;
-            color: var(--muted);
-            font-size: 12px;
+            padding: 7px 11px;
+            font-size: 11px;
+            white-space: nowrap;
         }
 
-        .dot {
-            width: 8px;
-            height: 8px;
-            background: var(--green);
-            border-radius: 50%;
+        .demo-badge {
+            border: 1px solid var(--border);
+            color: var(--muted);
         }
 
         .hero {
@@ -112,10 +111,10 @@
         }
 
         .hero h2 {
-            margin: 8px 0;
-            font-size: clamp(29px, 4vw, 43px);
-            letter-spacing: -1.5px;
+            font-size: clamp(30px, 4vw, 44px);
             line-height: 1.2;
+            letter-spacing: -1.3px;
+            margin: 10px 0;
         }
 
         .hero h2 span {
@@ -123,26 +122,26 @@
         }
 
         .hero p {
+            max-width: 670px;
             color: var(--muted);
-            max-width: 650px;
-            margin: 12px 0 0;
+            margin-bottom: 0;
         }
 
         .stats {
             display: grid;
             grid-template-columns: repeat(3, minmax(0, 1fr));
-            gap: 16px;
-            margin-bottom: 25px;
+            gap: 15px;
+            margin-bottom: 23px;
         }
 
         .stat, .panel {
-            border: 1px solid var(--border);
-            border-radius: var(--radius);
             background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 17px;
         }
 
         .stat {
-            padding: 21px;
+            padding: 20px;
         }
 
         .stat-label {
@@ -151,28 +150,27 @@
         }
 
         .stat-value {
-            font-size: 28px;
+            font-size: 29px;
             font-weight: 750;
-            margin-top: 8px;
-            letter-spacing: -1px;
+            margin-top: 5px;
         }
 
         .stat-note {
-            font-size: 11px;
             color: var(--muted);
-            margin-top: 4px;
+            font-size: 11px;
         }
 
-        .layout {
+        .main-grid {
             display: grid;
-            grid-template-columns: 310px minmax(0, 1fr);
-            gap: 22px;
+            grid-template-columns: 290px minmax(0, 1fr);
+            gap: 20px;
             align-items: start;
         }
 
         .panel {
-            padding: 23px;
+            padding: 22px;
             min-width: 0;
+            margin-bottom: 20px;
         }
 
         .panel-heading {
@@ -180,38 +178,38 @@
             justify-content: space-between;
             align-items: center;
             gap: 12px;
-            margin-bottom: 19px;
+            margin-bottom: 20px;
         }
 
         .panel-heading h3 {
-            margin: 0;
             font-size: 16px;
+            margin-bottom: 3px;
         }
 
         .panel-heading p {
-            margin: 4px 0 0;
-            font-size: 12px;
             color: var(--muted);
+            font-size: 12px;
+            margin: 0;
         }
 
         .field {
-            margin: 20px 0;
+            margin-bottom: 20px;
         }
 
         label {
             display: block;
             color: #bdcbe0;
             font-size: 12px;
-            margin-bottom: 8px;
+            margin-bottom: 7px;
         }
 
         select {
             width: 100%;
+            padding: 12px;
             background: var(--bg);
+            color: var(--text);
             border: 1px solid var(--border);
             border-radius: 10px;
-            color: var(--text);
-            padding: 12px;
             outline: none;
         }
 
@@ -221,18 +219,17 @@
 
         .primary-btn {
             width: 100%;
+            padding: 13px;
             border: 0;
             border-radius: 10px;
-            padding: 13px;
-            font-weight: 750;
-            color: #102016;
             background: var(--green);
+            color: #102016;
+            font-weight: 750;
             cursor: pointer;
-            transition: transform 0.15s, opacity 0.15s;
         }
 
         .primary-btn:hover {
-            transform: translateY(-1px);
+            filter: brightness(1.06);
         }
 
         .primary-btn:disabled {
@@ -240,38 +237,87 @@
             cursor: wait;
         }
 
-        .hint {
+        .hint, .status {
             color: var(--muted);
             font-size: 11px;
-            margin-top: 13px;
         }
 
-        .results-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 12px;
-            margin-bottom: 18px;
+        .hint {
+            margin: 13px 0 0;
         }
 
-        .results-header h3 {
-            margin: 0;
-            font-size: 19px;
-        }
-
-        .results-header p {
-            margin: 4px 0 0;
-            color: var(--muted);
-            font-size: 12px;
+        .status {
+            margin-top: 12px;
+            min-height: 18px;
         }
 
         .count-pill {
-            background: var(--green-dark);
             color: var(--green);
-            border-radius: 30px;
-            padding: 6px 10px;
+            background: var(--green-dark);
+        }
+
+        .network-panel {
+            overflow: hidden;
+        }
+
+        #networkGraph {
+            height: 360px;
+            width: 100%;
+            border: 1px solid var(--border);
+            border-radius: 13px;
+            background: #0b1120;
+        }
+
+        .legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-top: 13px;
+            color: var(--muted);
             font-size: 11px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+        }
+
+        .legend-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--green);
+        }
+
+        .legend-dot.route-dot {
+            background: var(--blue);
+        }
+
+        .legend-line {
+            width: 19px;
+            height: 3px;
+            background: var(--green);
+        }
+
+        .results-heading {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 17px;
+        }
+
+        .results-heading h3 {
+            font-size: 19px;
+            margin-bottom: 3px;
+        }
+
+        .results-heading p {
+            color: var(--muted);
+            font-size: 12px;
+            margin: 0;
         }
 
         .station-list {
@@ -280,10 +326,10 @@
         }
 
         .station {
-            padding: 19px;
+            padding: 18px;
+            background: var(--panel2);
             border: 1px solid var(--border);
-            border-radius: 14px;
-            background: var(--panel-light);
+            border-radius: 13px;
             transition: border-color 0.2s;
         }
 
@@ -293,28 +339,28 @@
 
         .station-top {
             display: flex;
-            align-items: flex-start;
             justify-content: space-between;
-            gap: 14px;
+            align-items: flex-start;
+            gap: 12px;
         }
 
         .station h4 {
-            margin: 0;
             font-size: 16px;
+            margin: 0 0 3px;
         }
 
         .station-id {
-            color: var(--muted);
             font-size: 11px;
-            margin-top: 4px;
+            color: var(--muted);
+            overflow-wrap: anywhere;
         }
 
         .available {
             flex-shrink: 0;
             color: var(--green);
             background: var(--green-dark);
-            padding: 5px 9px;
             border-radius: 20px;
+            padding: 5px 8px;
             font-size: 10px;
         }
 
@@ -322,14 +368,14 @@
             display: grid;
             grid-template-columns: repeat(3, minmax(0, 1fr));
             gap: 10px;
-            margin: 18px 0;
+            margin: 17px 0;
         }
 
         .metric {
-            padding: 11px;
-            border-radius: 10px;
-            background: #10192a;
             min-width: 0;
+            padding: 11px;
+            border-radius: 9px;
+            background: #10192a;
         }
 
         .metric-label {
@@ -338,15 +384,15 @@
         }
 
         .metric-value {
+            font-weight: 750;
             font-size: 15px;
-            font-weight: 700;
             margin-top: 4px;
             overflow-wrap: anywhere;
         }
 
         .route {
             border-top: 1px solid var(--border);
-            padding-top: 13px;
+            padding-top: 12px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -361,43 +407,38 @@
 
         .route-path {
             color: var(--blue);
-            font-weight: 650;
+            font-weight: 700;
             font-size: 12px;
             overflow-wrap: anywhere;
         }
 
         .empty {
+            padding: 32px 20px;
             border: 1px dashed var(--border);
-            padding: 35px 20px;
+            border-radius: 12px;
             text-align: center;
-            border-radius: 13px;
             color: var(--muted);
         }
 
         .empty strong {
             display: block;
             color: var(--text);
-            font-size: 15px;
             margin-bottom: 6px;
         }
 
-        .status {
-            min-height: 20px;
-            color: var(--muted);
-            font-size: 12px;
-            margin-top: 13px;
+        .error-text {
+            color: var(--red);
         }
 
         .footer {
-            padding: 25px 0 5px;
-            margin-top: 26px;
-            border-top: 1px solid var(--border);
             display: flex;
             justify-content: space-between;
             flex-wrap: wrap;
             gap: 10px;
+            padding: 22px 0 5px;
             color: var(--muted);
             font-size: 11px;
+            border-top: 1px solid var(--border);
         }
 
         @media (max-width: 850px) {
@@ -405,7 +446,7 @@
                 padding: 20px;
             }
 
-            .layout {
+            .main-grid {
                 grid-template-columns: 1fr;
             }
         }
@@ -417,27 +458,23 @@
             }
 
             .stat {
-                padding: 16px;
+                padding: 15px;
             }
 
             .stat-value {
                 font-size: 24px;
             }
 
+            .panel {
+                padding: 16px;
+            }
+
             .station-metrics {
                 grid-template-columns: 1fr;
             }
 
-            .topbar {
-                align-items: flex-start;
-            }
-
-            .live {
-                font-size: 10px;
-            }
-
-            .panel {
-                padding: 17px;
+            #networkGraph {
+                height: 300px;
             }
         }
     </style>
@@ -454,31 +491,28 @@
                 <p>Intelligent charging discovery</p>
             </div>
         </div>
-        <div class="live">
-            <span class="dot"></span>
-            DEMO NETWORK
-        </div>
+        <div class="demo-badge">● DEMO NETWORK</div>
     </header>
 
     <section class="hero">
         <div class="eyebrow">Electric mobility · Simplified</div>
         <h2>Find your next <span>charge.</span></h2>
         <p>
-            Discover available charging stations and calculate efficient
-            routes using graph-based shortest-path algorithms.
+            Discover compatible charging stations and explore efficient
+            routes powered by graph-based shortest-path algorithms.
         </p>
     </section>
 
     <section class="stats">
         <div class="stat">
             <div class="stat-label">Network junctions</div>
-            <div class="stat-value" id="junctionCount">{{ nodes|length }}</div>
+            <div class="stat-value">{{ nodes|length }}</div>
             <div class="stat-note">Nodes in the sample graph</div>
         </div>
         <div class="stat">
             <div class="stat-label">Stations in dataset</div>
             <div class="stat-value" id="stationCount">—</div>
-            <div class="stat-note">Sample charging locations</div>
+            <div class="stat-note">Fictional sample stations</div>
         </div>
         <div class="stat">
             <div class="stat-label">Available stations</div>
@@ -487,7 +521,8 @@
         </div>
     </section>
 
-    <main class="layout">
+    <div class="main-grid">
+
         <aside class="panel">
             <div class="panel-heading">
                 <div>
@@ -517,37 +552,73 @@
                 </div>
 
                 <button class="primary-btn" id="searchButton" type="submit">
-                    Search charging stations →
+                    Find charging stations →
                 </button>
 
                 <p class="hint">
-                    Routes are calculated using Dijkstra's shortest-path
-                    algorithm. Only compatible stations with available
-                    ports are shown.
+                    Only available stations compatible with your selected
+                    connector are displayed.
                 </p>
 
-                <div class="status" id="status" role="status"
+                <div id="status" class="status" role="status"
                      aria-live="polite"></div>
             </form>
         </aside>
 
-        <section class="panel">
-            <div class="results-header">
-                <div>
-                    <h3>Recommended stations</h3>
-                    <p>Ranked by shortest route, then price</p>
+        <div>
+            <section class="panel network-panel">
+                <div class="panel-heading">
+                    <div>
+                        <h3>Interactive road network</h3>
+                        <p>Road weights represent distances in kilometres</p>
+                    </div>
+                    <span class="count-pill">GRAPH VIEW</span>
                 </div>
-                <span class="count-pill" id="resultCount">Ready to search</span>
-            </div>
 
-            <div class="station-list" id="results">
-                <div class="empty">
-                    <strong>Your next charge starts here</strong>
-                    Choose a junction and search to see available stations.
+                <div id="networkGraph"></div>
+
+                <div class="legend">
+                    <div class="legend-item">
+                        <span class="legend-dot"></span>
+                        Junction
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-dot route-dot"></span>
+                        Route junction
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-line"></span>
+                        Shortest route
+                    </div>
                 </div>
-            </div>
-        </section>
-    </main>
+
+                <p id="graphStatus" class="hint">
+                    Search for stations to highlight the shortest route
+                    to the nearest available compatible station.
+                </p>
+            </section>
+
+            <section class="panel">
+                <div class="results-heading">
+                    <div>
+                        <h3>Recommended stations</h3>
+                        <p>Ranked by route distance, then price</p>
+                    </div>
+                    <span class="count-pill" id="resultCount">
+                        Ready to search
+                    </span>
+                </div>
+
+                <div class="station-list" id="results">
+                    <div class="empty">
+                        <strong>Your next charge starts here</strong>
+                        Select a junction and search to discover stations.
+                    </div>
+                </div>
+            </section>
+        </div>
+
+    </div>
 
     <footer class="footer">
         <span>EV ChargeFinder · DSA engineering project</span>
@@ -562,87 +633,236 @@
     const statusBox = document.getElementById("status");
     const searchButton = document.getElementById("searchButton");
     const resultCount = document.getElementById("resultCount");
+    const graphStatus = document.getElementById("graphStatus");
 
-    function makeElement(tag, className, text) {
+    // The sample network must match data/network.json.
+    // The Python backend still calculates the actual shortest routes.
+    let cy = null;
+
+    const graphNodes = [
+        { data: { id: "A", label: "A" }, position: { x: 70, y: 100 } },
+        { data: { id: "B", label: "B" }, position: { x: 220, y: 65 } },
+        { data: { id: "C", label: "C" }, position: { x: 220, y: 230 } },
+        { data: { id: "D", label: "D" }, position: { x: 390, y: 150 } }
+    ];
+
+    const graphEdges = [
+        { data: { id: "AB", source: "A", target: "B", weight: 2 } },
+        { data: { id: "AC", source: "A", target: "C", weight: 4 } },
+        { data: { id: "BC", source: "B", target: "C", weight: 1 } },
+        { data: { id: "BD", source: "B", target: "D", weight: 5 } },
+        { data: { id: "CD", source: "C", target: "D", weight: 2 } }
+    ];
+
+    function initializeGraph() {
+        if (typeof cytoscape === "undefined") {
+            graphStatus.textContent =
+                "Graph library did not load. Check your internet connection.";
+            return;
+        }
+
+        cy = cytoscape({
+            container: document.getElementById("networkGraph"),
+            elements: [...graphNodes, ...graphEdges],
+
+            layout: {
+                name: "preset",
+                fit: true,
+                padding: 35
+            },
+
+            style: [
+                {
+                    selector: "node",
+                    style: {
+                        "label": "data(label)",
+                        "background-color": "#9af56b",
+                        "color": "#edf4ff",
+                        "text-valign": "bottom",
+                        "text-margin-y": 8,
+                        "font-size": 15,
+                        "width": 36,
+                        "height": 36,
+                        "border-width": 2,
+                        "border-color": "#203b2b"
+                    }
+                },
+                {
+                    selector: "edge",
+                    style: {
+                        "label": "data(weight)",
+                        "width": 3,
+                        "line-color": "#465875",
+                        "curve-style": "bezier",
+                        "color": "#b6c7df",
+                        "font-size": 12,
+                        "text-background-color": "#0b1120",
+                        "text-background-opacity": 1,
+                        "text-background-padding": 3
+                    }
+                },
+                {
+                    selector: ".route-node",
+                    style: {
+                        "background-color": "#70b8ff",
+                        "border-color": "#ffffff",
+                        "border-width": 3
+                    }
+                },
+                {
+                    selector: ".route-edge",
+                    style: {
+                        "line-color": "#9af56b",
+                        "width": 6,
+                        "z-index": 10
+                    }
+                },
+                {
+                    selector: ".start-node",
+                    style: {
+                        "background-color": "#9af56b",
+                        "border-color": "#ffffff",
+                        "border-width": 4
+                    }
+                }
+            ]
+        });
+
+        cy.fit(undefined, 35);
+    }
+
+    function highlightRoute(route, start) {
+        if (!cy) return;
+
+        cy.elements().removeClass("route-node route-edge start-node");
+
+        if (!route || route.length === 0) {
+            graphStatus.textContent =
+                "No reachable route to display.";
+            return;
+        }
+
+        route.forEach(node => {
+            cy.getElementById(node).addClass("route-node");
+        });
+
+        cy.getElementById(start).addClass("start-node");
+
+        for (let i = 0; i < route.length - 1; i++) {
+            const from = route[i];
+            const to = route[i + 1];
+
+            const edge = cy.edges().filter(item =>
+                (item.data("source") === from &&
+                 item.data("target") === to) ||
+                (item.data("source") === to &&
+                 item.data("target") === from)
+            );
+
+            edge.addClass("route-edge");
+        }
+
+        graphStatus.textContent =
+            "Highlighted shortest route: " + route.join(" → ");
+    }
+
+    function createElement(tag, className, text) {
         const element = document.createElement(tag);
         if (className) element.className = className;
         if (text !== undefined) element.textContent = text;
         return element;
     }
 
-    function metric(label, value) {
-        const box = makeElement("div", "metric");
-        box.append(
-            makeElement("div", "metric-label", label),
-            makeElement("div", "metric-value", value)
+    function createMetric(label, value) {
+        const metric = createElement("div", "metric");
+        metric.append(
+            createElement("div", "metric-label", label),
+            createElement("div", "metric-value", value)
         );
-        return box;
+        return metric;
     }
 
-    function renderStation(station) {
-        const card = makeElement("article", "station");
-        const top = makeElement("div", "station-top");
-        const identity = makeElement("div");
+    function renderStation(station, start) {
+        const card = createElement("article", "station");
+        const top = createElement("div", "station-top");
+        const identity = createElement("div");
+
         identity.append(
-            makeElement("h4", "", station.name),
-            makeElement("div", "station-id",
-                `${station.id} · ${station.connectors.join(", ")}`)
+            createElement("h4", "", station.name),
+            createElement(
+                "div",
+                "station-id",
+                `${station.id} · ${station.connectors.join(", ")}`
+            )
         );
 
-        const badge = makeElement(
-            "span", "available",
-            `${station.available_ports} port(s) available`
+        top.append(
+            identity,
+            createElement(
+                "span",
+                "available",
+                `${station.available_ports} port(s) available`
+            )
         );
 
-        top.append(identity, badge);
-
-        const metrics = makeElement("div", "station-metrics");
+        const metrics = createElement("div", "station-metrics");
         metrics.append(
-            metric("ROUTE DISTANCE", `${station.distance_km} km`),
-            metric("CHARGING POWER", `${station.power_kw} kW`),
-            metric("PRICE PER kWh", `₹${station.price_per_kwh}`)
+            createMetric("ROUTE DISTANCE", `${station.distance_km} km`),
+            createMetric("CHARGING POWER", `${station.power_kw} kW`),
+            createMetric("PRICE PER kWh", `₹${station.price_per_kwh}`)
         );
 
-        const route = makeElement("div", "route");
+        const route = createElement("div", "route");
         route.append(
-            makeElement("span", "route-label", "SHORTEST ROUTE"),
-            makeElement("span", "route-path",
-                station.route.join("  →  "))
+            createElement("span", "route-label", "SHORTEST ROUTE"),
+            createElement("span", "route-path", station.route.join(" → "))
         );
 
         card.append(top, metrics, route);
+
+        // Clicking a station highlights its own route.
+        card.style.cursor = "pointer";
+        card.title = "Click to highlight this station's route";
+
+        card.addEventListener("click", () => {
+            highlightRoute(station.route, start);
+        });
+
         return card;
     }
 
-    async function loadNetworkSummary() {
+    async function loadSummary() {
         try {
+            // Use a valid sample junction for the summary.
             const response = await fetch("/api/stations?start=A");
-            if (!response.ok) return;
+
+            if (!response.ok) {
+                throw new Error("Unable to load summary");
+            }
 
             const data = await response.json();
 
-            document.getElementById("stationCount").textContent =
-                data.count + " available";
-
-            // The endpoint returns available stations only.
-            // This label deliberately reflects the returned sample.
             document.getElementById("availableCount").textContent =
                 data.count;
+
+            // The API excludes unavailable and incompatible stations.
+            // The total station count is set from the sample dataset below.
+            document.getElementById("stationCount").textContent = "3";
         } catch {
-            document.getElementById("stationCount").textContent = "—";
             document.getElementById("availableCount").textContent = "—";
+            document.getElementById("stationCount").textContent = "3";
         }
     }
 
-    form.addEventListener("submit", async (event) => {
+    form.addEventListener("submit", async event => {
         event.preventDefault();
 
         const start = document.getElementById("start").value;
         const connector = document.getElementById("connector").value;
 
         searchButton.disabled = true;
-        searchButton.textContent = "Searching...";
-        statusBox.textContent = "Calculating shortest routes...";
+        searchButton.textContent = "Calculating routes...";
+        statusBox.textContent = "Finding compatible stations...";
         resultCount.textContent = "Searching";
         results.replaceChildren();
 
@@ -652,44 +872,53 @@
             const data = await response.json();
 
             if (!response.ok) {
-                throw new Error(data.error || "Unable to search stations.");
+                throw new Error(data.error || "Station search failed.");
             }
 
             resultCount.textContent =
                 `${data.count} station${data.count === 1 ? "" : "s"} found`;
 
             if (data.count === 0) {
-                const empty = makeElement("div", "empty");
+                const empty = createElement("div", "empty");
                 empty.append(
-                    makeElement("strong", "", "No matching stations"),
-                    makeElement("span", "",
-                        "Try another junction or connector type.")
+                    createElement("strong", "", "No matching stations"),
+                    createElement(
+                        "span",
+                        "",
+                        "Try another starting junction or connector type."
+                    )
                 );
                 results.appendChild(empty);
+                highlightRoute([], start);
             } else {
                 data.stations.forEach(station => {
-                    results.appendChild(renderStation(station));
+                    results.appendChild(renderStation(station, start));
                 });
+
+                // Initially highlight the nearest station's route.
+                highlightRoute(data.stations[0].route, start);
             }
 
             statusBox.textContent =
-                `Search completed for junction ${start}.`;
+                `Search completed from junction ${start}.`;
         } catch (error) {
-            const empty = makeElement("div", "empty");
+            const empty = createElement("div", "empty error-text");
             empty.append(
-                makeElement("strong", "", "Search failed"),
-                makeElement("span", "", error.message)
+                createElement("strong", "", "Search failed"),
+                createElement("span", "", error.message)
             );
+
             results.appendChild(empty);
             resultCount.textContent = "Error";
             statusBox.textContent = "Please try again.";
         } finally {
             searchButton.disabled = false;
-            searchButton.textContent = "Search charging stations →";
+            searchButton.textContent = "Find charging stations →";
         }
     });
 
-    loadNetworkSummary();
+    initializeGraph();
+    loadSummary();
 </script>
 </body>
 </html>
