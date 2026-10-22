@@ -1,0 +1,38 @@
+
+{
+  "graph": {
+    "A": [["B", 2.0], ["C", 4.0]],
+    "B": [["A", 2.0], ["C", 1.0], ["D", 5.0]],
+    "C": [["A", 4.0], ["B", 1.0], ["D", 2.0]],
+    "D": [["B", 5.0], ["C", 2.0]]
+  },
+  "stations": [
+    {
+      "id": "S1",
+      "name": "Central Charging Hub",
+      "node": "C",
+      "connectors": ["CCS2"],
+      "power_kw": 60,
+      "available_ports": 2,
+      "price_per_kwh": 18.0
+    },
+    {
+      "id": "S2",
+      "name": "City Mall Charger",
+      "node": "D",
+      "connectors": ["CCS2", "Type2"],
+      "power_kw": 30,
+      "available_ports": 1,
+      "price_per_kwh": 15.0
+    },
+    {
+      "id": "S3",
+      "name": "Northside Charger",
+      "node": "B",
+      "connectors": ["Type2"],
+      "power_kw": 22,
+      "available_ports": 0,
+      "price_per_kwh": 12.0
+    }
+  ]
+}

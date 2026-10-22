@@ -1,0 +1,121 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>EV ChargeFinder</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 850px;
+            margin: 40px auto;
+            padding: 0 18px;
+            background: #f2f5fa;
+            color: #172033;
+        }
+        .panel {
+            background: white;
+            padding: 22px;
+            margin: 16px 0;
+            border-radius: 12px;
+        }
+        select, button {
+            padding: 10px;
+            margin: 6px 4px 6px 0;
+        }
+        button { cursor: pointer; }
+        .station {
+            border: 1px solid #dce3ed;
+            border-radius: 8px;
+            padding: 14px;
+            margin-top: 12px;
+        }
+    </style>
+</head>
+<body>
+    <h1>⚡ EV ChargeFinder</h1>
+    <p>Find charging stations using DSA algorithms.</p>
+
+    <div class="panel">
+        <label for="start">Starting junction:</label>
+        <select id="start">
+            {% for node in nodes %}
+            <option value="{{ node }}">{{ node }}</option>
+            {% endfor %}
+        </select>
+
+        <label for="connector">Connector:</label>
+        <select id="connector">
+            <option value="">Any</option>
+            <option value="CCS2">CCS2</option>
+            <option value="Type2">Type2</option>
+        </select>
+
+        <button id="search">Find stations</button>
+        <p id="status" role="status"></p>
+    </div>
+
+    <section class="panel">
+        <h2>Recommended stations</h2>
+        <div id="results">Select a junction and search.</div>
+    </section>
+
+    <script>
+        const button = document.getElementById("search");
+        const results = document.getElementById("results");
+        const status = document.getElementById("status");
+
+        button.addEventListener("click", async () => {
+            const start = document.getElementById("start").value;
+            const connector = document.getElementById("connector").value;
+
+            results.replaceChildren();
+            status.textContent = "Searching...";
+            button.disabled = true;
+
+            try {
+                const params = new URLSearchParams({start, connector});
+                const response = await fetch(`/api/stations?${params}`);
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || "Search failed");
+                }
+
+                status.textContent = `${data.count} station(s) found.`;
+
+                if (data.count === 0) {
+                    results.textContent = "No matching stations found.";
+                }
+
+                for (const station of data.stations) {
+                    const card = document.createElement("article");
+                    card.className = "station";
+
+                    const title = document.createElement("h3");
+                    title.textContent = station.name;
+
+                    const route = document.createElement("p");
+                    route.textContent =
+                        `Route: ${station.route.join(" → ")} | ` +
+                        `Distance: ${station.distance_km} km`;
+
+                    const details = document.createElement("p");
+                    details.textContent =
+                        `${station.power_kw} kW | ` +
+                        `${station.available_ports} available port(s) | ` +
+                        `₹${station.price_per_kwh}/kWh`;
+
+                    card.append(title, route, details);
+                    results.appendChild(card);
+                }
+            } catch (error) {
+                status.textContent = error.message;
+            } finally {
+                button.disabled = false;
+            }
+        });
+    </script>
+</body>
+</html>
