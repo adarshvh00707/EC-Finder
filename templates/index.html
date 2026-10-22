@@ -3,119 +3,693 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>EV ChargeFinder</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EV ChargeFinder | Smart Charging</title>
+
     <style>
+        :root {
+            --bg: #0b1120;
+            --panel: #121b2d;
+            --panel-light: #18243a;
+            --border: #28364d;
+            --text: #edf4ff;
+            --muted: #91a2bb;
+            --green: #9af56b;
+            --green-dark: #203b2b;
+            --blue: #70b8ff;
+            --radius: 18px;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
         body {
-            font-family: Arial, sans-serif;
-            max-width: 850px;
-            margin: 40px auto;
-            padding: 0 18px;
-            background: #f2f5fa;
-            color: #172033;
+            margin: 0;
+            background: var(--bg);
+            color: var(--text);
+            font-family: Inter, "Segoe UI", Arial, sans-serif;
+            font-size: 14px;
+            line-height: 1.6;
         }
+
+        button, select {
+            font: inherit;
+        }
+
+        .app {
+            max-width: 1440px;
+            margin: auto;
+            padding: 28px 34px;
+        }
+
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+            padding-bottom: 25px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 13px;
+        }
+
+        .brand-icon {
+            display: grid;
+            place-items: center;
+            width: 46px;
+            height: 46px;
+            border-radius: 14px;
+            background: var(--green);
+            color: #102016;
+            font-size: 25px;
+        }
+
+        .brand h1 {
+            margin: 0;
+            font-size: 20px;
+            letter-spacing: -0.5px;
+        }
+
+        .brand p {
+            margin: 2px 0 0;
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        .live {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border: 1px solid var(--border);
+            padding: 8px 12px;
+            border-radius: 30px;
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            background: var(--green);
+            border-radius: 50%;
+        }
+
+        .hero {
+            padding: 38px 0 28px;
+        }
+
+        .eyebrow {
+            color: var(--green);
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .hero h2 {
+            margin: 8px 0;
+            font-size: clamp(29px, 4vw, 43px);
+            letter-spacing: -1.5px;
+            line-height: 1.2;
+        }
+
+        .hero h2 span {
+            color: var(--green);
+        }
+
+        .hero p {
+            color: var(--muted);
+            max-width: 650px;
+            margin: 12px 0 0;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 16px;
+            margin-bottom: 25px;
+        }
+
+        .stat, .panel {
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            background: var(--panel);
+        }
+
+        .stat {
+            padding: 21px;
+        }
+
+        .stat-label {
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: 750;
+            margin-top: 8px;
+            letter-spacing: -1px;
+        }
+
+        .stat-note {
+            font-size: 11px;
+            color: var(--muted);
+            margin-top: 4px;
+        }
+
+        .layout {
+            display: grid;
+            grid-template-columns: 310px minmax(0, 1fr);
+            gap: 22px;
+            align-items: start;
+        }
+
         .panel {
-            background: white;
-            padding: 22px;
-            margin: 16px 0;
-            border-radius: 12px;
+            padding: 23px;
+            min-width: 0;
         }
-        select, button {
-            padding: 10px;
-            margin: 6px 4px 6px 0;
+
+        .panel-heading {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 19px;
         }
-        button { cursor: pointer; }
+
+        .panel-heading h3 {
+            margin: 0;
+            font-size: 16px;
+        }
+
+        .panel-heading p {
+            margin: 4px 0 0;
+            font-size: 12px;
+            color: var(--muted);
+        }
+
+        .field {
+            margin: 20px 0;
+        }
+
+        label {
+            display: block;
+            color: #bdcbe0;
+            font-size: 12px;
+            margin-bottom: 8px;
+        }
+
+        select {
+            width: 100%;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 10px;
+            color: var(--text);
+            padding: 12px;
+            outline: none;
+        }
+
+        select:focus {
+            border-color: var(--green);
+        }
+
+        .primary-btn {
+            width: 100%;
+            border: 0;
+            border-radius: 10px;
+            padding: 13px;
+            font-weight: 750;
+            color: #102016;
+            background: var(--green);
+            cursor: pointer;
+            transition: transform 0.15s, opacity 0.15s;
+        }
+
+        .primary-btn:hover {
+            transform: translateY(-1px);
+        }
+
+        .primary-btn:disabled {
+            opacity: 0.6;
+            cursor: wait;
+        }
+
+        .hint {
+            color: var(--muted);
+            font-size: 11px;
+            margin-top: 13px;
+        }
+
+        .results-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 18px;
+        }
+
+        .results-header h3 {
+            margin: 0;
+            font-size: 19px;
+        }
+
+        .results-header p {
+            margin: 4px 0 0;
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        .count-pill {
+            background: var(--green-dark);
+            color: var(--green);
+            border-radius: 30px;
+            padding: 6px 10px;
+            font-size: 11px;
+        }
+
+        .station-list {
+            display: grid;
+            gap: 13px;
+        }
+
         .station {
-            border: 1px solid #dce3ed;
-            border-radius: 8px;
-            padding: 14px;
-            margin-top: 12px;
+            padding: 19px;
+            border: 1px solid var(--border);
+            border-radius: 14px;
+            background: var(--panel-light);
+            transition: border-color 0.2s;
+        }
+
+        .station:hover {
+            border-color: #57764e;
+        }
+
+        .station-top {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 14px;
+        }
+
+        .station h4 {
+            margin: 0;
+            font-size: 16px;
+        }
+
+        .station-id {
+            color: var(--muted);
+            font-size: 11px;
+            margin-top: 4px;
+        }
+
+        .available {
+            flex-shrink: 0;
+            color: var(--green);
+            background: var(--green-dark);
+            padding: 5px 9px;
+            border-radius: 20px;
+            font-size: 10px;
+        }
+
+        .station-metrics {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 10px;
+            margin: 18px 0;
+        }
+
+        .metric {
+            padding: 11px;
+            border-radius: 10px;
+            background: #10192a;
+            min-width: 0;
+        }
+
+        .metric-label {
+            color: var(--muted);
+            font-size: 10px;
+        }
+
+        .metric-value {
+            font-size: 15px;
+            font-weight: 700;
+            margin-top: 4px;
+            overflow-wrap: anywhere;
+        }
+
+        .route {
+            border-top: 1px solid var(--border);
+            padding-top: 13px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .route-label {
+            color: var(--muted);
+            font-size: 11px;
+        }
+
+        .route-path {
+            color: var(--blue);
+            font-weight: 650;
+            font-size: 12px;
+            overflow-wrap: anywhere;
+        }
+
+        .empty {
+            border: 1px dashed var(--border);
+            padding: 35px 20px;
+            text-align: center;
+            border-radius: 13px;
+            color: var(--muted);
+        }
+
+        .empty strong {
+            display: block;
+            color: var(--text);
+            font-size: 15px;
+            margin-bottom: 6px;
+        }
+
+        .status {
+            min-height: 20px;
+            color: var(--muted);
+            font-size: 12px;
+            margin-top: 13px;
+        }
+
+        .footer {
+            padding: 25px 0 5px;
+            margin-top: 26px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
+            color: var(--muted);
+            font-size: 11px;
+        }
+
+        @media (max-width: 850px) {
+            .app {
+                padding: 20px;
+            }
+
+            .layout {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 560px) {
+            .stats {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+
+            .stat {
+                padding: 16px;
+            }
+
+            .stat-value {
+                font-size: 24px;
+            }
+
+            .station-metrics {
+                grid-template-columns: 1fr;
+            }
+
+            .topbar {
+                align-items: flex-start;
+            }
+
+            .live {
+                font-size: 10px;
+            }
+
+            .panel {
+                padding: 17px;
+            }
         }
     </style>
 </head>
+
 <body>
-    <h1>⚡ EV ChargeFinder</h1>
-    <p>Find charging stations using DSA algorithms.</p>
+<div class="app">
 
-    <div class="panel">
-        <label for="start">Starting junction:</label>
-        <select id="start">
-            {% for node in nodes %}
-            <option value="{{ node }}">{{ node }}</option>
-            {% endfor %}
-        </select>
+    <header class="topbar">
+        <div class="brand">
+            <div class="brand-icon">ϟ</div>
+            <div>
+                <h1>EV ChargeFinder</h1>
+                <p>Intelligent charging discovery</p>
+            </div>
+        </div>
+        <div class="live">
+            <span class="dot"></span>
+            DEMO NETWORK
+        </div>
+    </header>
 
-        <label for="connector">Connector:</label>
-        <select id="connector">
-            <option value="">Any</option>
-            <option value="CCS2">CCS2</option>
-            <option value="Type2">Type2</option>
-        </select>
-
-        <button id="search">Find stations</button>
-        <p id="status" role="status"></p>
-    </div>
-
-    <section class="panel">
-        <h2>Recommended stations</h2>
-        <div id="results">Select a junction and search.</div>
+    <section class="hero">
+        <div class="eyebrow">Electric mobility · Simplified</div>
+        <h2>Find your next <span>charge.</span></h2>
+        <p>
+            Discover available charging stations and calculate efficient
+            routes using graph-based shortest-path algorithms.
+        </p>
     </section>
 
-    <script>
-        const button = document.getElementById("search");
-        const results = document.getElementById("results");
-        const status = document.getElementById("status");
+    <section class="stats">
+        <div class="stat">
+            <div class="stat-label">Network junctions</div>
+            <div class="stat-value" id="junctionCount">{{ nodes|length }}</div>
+            <div class="stat-note">Nodes in the sample graph</div>
+        </div>
+        <div class="stat">
+            <div class="stat-label">Stations in dataset</div>
+            <div class="stat-value" id="stationCount">—</div>
+            <div class="stat-note">Sample charging locations</div>
+        </div>
+        <div class="stat">
+            <div class="stat-label">Available stations</div>
+            <div class="stat-value" id="availableCount">—</div>
+            <div class="stat-note">Based on sample port data</div>
+        </div>
+    </section>
 
-        button.addEventListener("click", async () => {
-            const start = document.getElementById("start").value;
-            const connector = document.getElementById("connector").value;
+    <main class="layout">
+        <aside class="panel">
+            <div class="panel-heading">
+                <div>
+                    <h3>Find a charger</h3>
+                    <p>Customize your search</p>
+                </div>
+                <span>⚡</span>
+            </div>
 
-            results.replaceChildren();
-            status.textContent = "Searching...";
-            button.disabled = true;
+            <form id="searchForm">
+                <div class="field">
+                    <label for="start">Starting junction</label>
+                    <select id="start" name="start">
+                        {% for node in nodes %}
+                        <option value="{{ node }}">{{ node }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
 
-            try {
-                const params = new URLSearchParams({start, connector});
-                const response = await fetch(`/api/stations?${params}`);
-                const data = await response.json();
+                <div class="field">
+                    <label for="connector">Connector compatibility</label>
+                    <select id="connector" name="connector">
+                        <option value="">All connector types</option>
+                        <option value="CCS2">CCS2</option>
+                        <option value="Type2">Type 2</option>
+                    </select>
+                </div>
 
-                if (!response.ok) {
-                    throw new Error(data.error || "Search failed");
-                }
+                <button class="primary-btn" id="searchButton" type="submit">
+                    Search charging stations →
+                </button>
 
-                status.textContent = `${data.count} station(s) found.`;
+                <p class="hint">
+                    Routes are calculated using Dijkstra's shortest-path
+                    algorithm. Only compatible stations with available
+                    ports are shown.
+                </p>
 
-                if (data.count === 0) {
-                    results.textContent = "No matching stations found.";
-                }
+                <div class="status" id="status" role="status"
+                     aria-live="polite"></div>
+            </form>
+        </aside>
 
-                for (const station of data.stations) {
-                    const card = document.createElement("article");
-                    card.className = "station";
+        <section class="panel">
+            <div class="results-header">
+                <div>
+                    <h3>Recommended stations</h3>
+                    <p>Ranked by shortest route, then price</p>
+                </div>
+                <span class="count-pill" id="resultCount">Ready to search</span>
+            </div>
 
-                    const title = document.createElement("h3");
-                    title.textContent = station.name;
+            <div class="station-list" id="results">
+                <div class="empty">
+                    <strong>Your next charge starts here</strong>
+                    Choose a junction and search to see available stations.
+                </div>
+            </div>
+        </section>
+    </main>
 
-                    const route = document.createElement("p");
-                    route.textContent =
-                        `Route: ${station.route.join(" → ")} | ` +
-                        `Distance: ${station.distance_km} km`;
+    <footer class="footer">
+        <span>EV ChargeFinder · DSA engineering project</span>
+        <span>Python · Flask · Dijkstra · BFS</span>
+    </footer>
 
-                    const details = document.createElement("p");
-                    details.textContent =
-                        `${station.power_kw} kW | ` +
-                        `${station.available_ports} available port(s) | ` +
-                        `₹${station.price_per_kwh}/kWh`;
+</div>
 
-                    card.append(title, route, details);
-                    results.appendChild(card);
-                }
-            } catch (error) {
-                status.textContent = error.message;
-            } finally {
-                button.disabled = false;
+<script>
+    const form = document.getElementById("searchForm");
+    const results = document.getElementById("results");
+    const statusBox = document.getElementById("status");
+    const searchButton = document.getElementById("searchButton");
+    const resultCount = document.getElementById("resultCount");
+
+    function makeElement(tag, className, text) {
+        const element = document.createElement(tag);
+        if (className) element.className = className;
+        if (text !== undefined) element.textContent = text;
+        return element;
+    }
+
+    function metric(label, value) {
+        const box = makeElement("div", "metric");
+        box.append(
+            makeElement("div", "metric-label", label),
+            makeElement("div", "metric-value", value)
+        );
+        return box;
+    }
+
+    function renderStation(station) {
+        const card = makeElement("article", "station");
+        const top = makeElement("div", "station-top");
+        const identity = makeElement("div");
+        identity.append(
+            makeElement("h4", "", station.name),
+            makeElement("div", "station-id",
+                `${station.id} · ${station.connectors.join(", ")}`)
+        );
+
+        const badge = makeElement(
+            "span", "available",
+            `${station.available_ports} port(s) available`
+        );
+
+        top.append(identity, badge);
+
+        const metrics = makeElement("div", "station-metrics");
+        metrics.append(
+            metric("ROUTE DISTANCE", `${station.distance_km} km`),
+            metric("CHARGING POWER", `${station.power_kw} kW`),
+            metric("PRICE PER kWh", `₹${station.price_per_kwh}`)
+        );
+
+        const route = makeElement("div", "route");
+        route.append(
+            makeElement("span", "route-label", "SHORTEST ROUTE"),
+            makeElement("span", "route-path",
+                station.route.join("  →  "))
+        );
+
+        card.append(top, metrics, route);
+        return card;
+    }
+
+    async function loadNetworkSummary() {
+        try {
+            const response = await fetch("/api/stations?start=A");
+            if (!response.ok) return;
+
+            const data = await response.json();
+
+            document.getElementById("stationCount").textContent =
+                data.count + " available";
+
+            // The endpoint returns available stations only.
+            // This label deliberately reflects the returned sample.
+            document.getElementById("availableCount").textContent =
+                data.count;
+        } catch {
+            document.getElementById("stationCount").textContent = "—";
+            document.getElementById("availableCount").textContent = "—";
+        }
+    }
+
+    form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+
+        const start = document.getElementById("start").value;
+        const connector = document.getElementById("connector").value;
+
+        searchButton.disabled = true;
+        searchButton.textContent = "Searching...";
+        statusBox.textContent = "Calculating shortest routes...";
+        resultCount.textContent = "Searching";
+        results.replaceChildren();
+
+        try {
+            const params = new URLSearchParams({ start, connector });
+            const response = await fetch(`/api/stations?${params}`);
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.error || "Unable to search stations.");
             }
-        });
-    </script>
+
+            resultCount.textContent =
+                `${data.count} station${data.count === 1 ? "" : "s"} found`;
+
+            if (data.count === 0) {
+                const empty = makeElement("div", "empty");
+                empty.append(
+                    makeElement("strong", "", "No matching stations"),
+                    makeElement("span", "",
+                        "Try another junction or connector type.")
+                );
+                results.appendChild(empty);
+            } else {
+                data.stations.forEach(station => {
+                    results.appendChild(renderStation(station));
+                });
+            }
+
+            statusBox.textContent =
+                `Search completed for junction ${start}.`;
+        } catch (error) {
+            const empty = makeElement("div", "empty");
+            empty.append(
+                makeElement("strong", "", "Search failed"),
+                makeElement("span", "", error.message)
+            );
+            results.appendChild(empty);
+            resultCount.textContent = "Error";
+            statusBox.textContent = "Please try again.";
+        } finally {
+            searchButton.disabled = false;
+            searchButton.textContent = "Search charging stations →";
+        }
+    });
+
+    loadNetworkSummary();
+</script>
 </body>
 </html>
