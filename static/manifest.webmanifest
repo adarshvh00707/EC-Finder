@@ -1,0 +1,22 @@
+
+{
+  "id": "/",
+  "name": "EV ChargeFinder",
+  "short_name": "ChargeFinder",
+  "description": "EV charging station finder, route planner and battery simulator.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#0a1020",
+  "theme_color": "#0a1020",
+  "categories": ["navigation", "utilities"],
+  "icons": [
+    {
+      "src": "/static/icons/ev-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

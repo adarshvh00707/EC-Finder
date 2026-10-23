@@ -2,923 +2,927 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EV ChargeFinder</title>
-
-    <!-- Cytoscape.js for interactive graph visualization -->
-    <script src="https://unpkg.com/cytoscape/dist/cytoscape.min.js"></script>
-
-    <style>
-        :root {
-            --bg: #0b1120;
-            --panel: #121b2d;
-            --panel2: #18243a;
-            --border: #28364d;
-            --text: #edf4ff;
-            --muted: #91a2bb;
-            --green: #9af56b;
-            --green-dark: #203b2b;
-            --blue: #70b8ff;
-            --red: #ff8585;
-        }
-
-        * {
-            box-sizing: border-box;
-        }
-
-        body {
-            margin: 0;
-            background: var(--bg);
-            color: var(--text);
-            font-family: "Segoe UI", Arial, sans-serif;
-            line-height: 1.6;
-        }
-
-        button, select {
-            font: inherit;
-        }
-
-        .app {
-            max-width: 1440px;
-            margin: auto;
-            padding: 28px 34px;
-        }
-
-        .topbar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 16px;
-            padding-bottom: 24px;
-            border-bottom: 1px solid var(--border);
-        }
-
-        .brand {
-            display: flex;
-            align-items: center;
-            gap: 13px;
-        }
-
-        .brand-icon {
-            display: grid;
-            place-items: center;
-            width: 48px;
-            height: 48px;
-            background: var(--green);
-            color: #102016;
-            border-radius: 14px;
-            font-size: 28px;
-        }
-
-        h1, h2, h3, h4, p {
-            margin-top: 0;
-        }
-
-        .brand h1 {
-            font-size: 20px;
-            margin-bottom: 0;
-        }
-
-        .brand p, .muted {
-            color: var(--muted);
-            font-size: 12px;
-            margin: 2px 0 0;
-        }
-
-        .demo-badge, .count-pill {
-            border-radius: 30px;
-            padding: 7px 11px;
-            font-size: 11px;
-            white-space: nowrap;
-        }
-
-        .demo-badge {
-            border: 1px solid var(--border);
-            color: var(--muted);
-        }
-
-        .hero {
-            padding: 38px 0 28px;
-        }
-
-        .eyebrow {
-            color: var(--green);
-            font-size: 11px;
-            font-weight: 800;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-        }
-
-        .hero h2 {
-            font-size: clamp(30px, 4vw, 44px);
-            line-height: 1.2;
-            letter-spacing: -1.3px;
-            margin: 10px 0;
-        }
-
-        .hero h2 span {
-            color: var(--green);
-        }
-
-        .hero p {
-            max-width: 670px;
-            color: var(--muted);
-            margin-bottom: 0;
-        }
-
-        .stats {
-            display: grid;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
-            gap: 15px;
-            margin-bottom: 23px;
-        }
-
-        .stat, .panel {
-            background: var(--panel);
-            border: 1px solid var(--border);
-            border-radius: 17px;
-        }
-
-        .stat {
-            padding: 20px;
-        }
-
-        .stat-label {
-            color: var(--muted);
-            font-size: 12px;
-        }
-
-        .stat-value {
-            font-size: 29px;
-            font-weight: 750;
-            margin-top: 5px;
-        }
-
-        .stat-note {
-            color: var(--muted);
-            font-size: 11px;
-        }
-
-        .main-grid {
-            display: grid;
-            grid-template-columns: 290px minmax(0, 1fr);
-            gap: 20px;
-            align-items: start;
-        }
-
-        .panel {
-            padding: 22px;
-            min-width: 0;
-            margin-bottom: 20px;
-        }
-
-        .panel-heading {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 20px;
-        }
-
-        .panel-heading h3 {
-            font-size: 16px;
-            margin-bottom: 3px;
-        }
-
-        .panel-heading p {
-            color: var(--muted);
-            font-size: 12px;
-            margin: 0;
-        }
-
-        .field {
-            margin-bottom: 20px;
-        }
-
-        label {
-            display: block;
-            color: #bdcbe0;
-            font-size: 12px;
-            margin-bottom: 7px;
-        }
-
-        select {
-            width: 100%;
-            padding: 12px;
-            background: var(--bg);
-            color: var(--text);
-            border: 1px solid var(--border);
-            border-radius: 10px;
-            outline: none;
-        }
-
-        select:focus {
-            border-color: var(--green);
-        }
-
-        .primary-btn {
-            width: 100%;
-            padding: 13px;
-            border: 0;
-            border-radius: 10px;
-            background: var(--green);
-            color: #102016;
-            font-weight: 750;
-            cursor: pointer;
-        }
-
-        .primary-btn:hover {
-            filter: brightness(1.06);
-        }
-
-        .primary-btn:disabled {
-            opacity: 0.6;
-            cursor: wait;
-        }
-
-        .hint, .status {
-            color: var(--muted);
-            font-size: 11px;
-        }
-
-        .hint {
-            margin: 13px 0 0;
-        }
-
-        .status {
-            margin-top: 12px;
-            min-height: 18px;
-        }
-
-        .count-pill {
-            color: var(--green);
-            background: var(--green-dark);
-        }
-
-        .network-panel {
-            overflow: hidden;
-        }
-
-        #networkGraph {
-            height: 360px;
-            width: 100%;
-            border: 1px solid var(--border);
-            border-radius: 13px;
-            background: #0b1120;
-        }
-
-        .legend {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 16px;
-            margin-top: 13px;
-            color: var(--muted);
-            font-size: 11px;
-        }
-
-        .legend-item {
-            display: flex;
-            align-items: center;
-            gap: 7px;
-        }
-
-        .legend-dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            background: var(--green);
-        }
-
-        .legend-dot.route-dot {
-            background: var(--blue);
-        }
-
-        .legend-line {
-            width: 19px;
-            height: 3px;
-            background: var(--green);
-        }
-
-        .results-heading {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 12px;
-            margin-bottom: 17px;
-        }
-
-        .results-heading h3 {
-            font-size: 19px;
-            margin-bottom: 3px;
-        }
-
-        .results-heading p {
-            color: var(--muted);
-            font-size: 12px;
-            margin: 0;
-        }
-
-        .station-list {
-            display: grid;
-            gap: 13px;
-        }
-
-        .station {
-            padding: 18px;
-            background: var(--panel2);
-            border: 1px solid var(--border);
-            border-radius: 13px;
-            transition: border-color 0.2s;
-        }
-
-        .station:hover {
-            border-color: #57764e;
-        }
-
-        .station-top {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            gap: 12px;
-        }
-
-        .station h4 {
-            font-size: 16px;
-            margin: 0 0 3px;
-        }
-
-        .station-id {
-            font-size: 11px;
-            color: var(--muted);
-            overflow-wrap: anywhere;
-        }
-
-        .available {
-            flex-shrink: 0;
-            color: var(--green);
-            background: var(--green-dark);
-            border-radius: 20px;
-            padding: 5px 8px;
-            font-size: 10px;
-        }
-
-        .station-metrics {
-            display: grid;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
-            gap: 10px;
-            margin: 17px 0;
-        }
-
-        .metric {
-            min-width: 0;
-            padding: 11px;
-            border-radius: 9px;
-            background: #10192a;
-        }
-
-        .metric-label {
-            color: var(--muted);
-            font-size: 10px;
-        }
-
-        .metric-value {
-            font-weight: 750;
-            font-size: 15px;
-            margin-top: 4px;
-            overflow-wrap: anywhere;
-        }
-
-        .route {
-            border-top: 1px solid var(--border);
-            padding-top: 12px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: 8px;
-        }
-
-        .route-label {
-            color: var(--muted);
-            font-size: 11px;
-        }
-
-        .route-path {
-            color: var(--blue);
-            font-weight: 700;
-            font-size: 12px;
-            overflow-wrap: anywhere;
-        }
-
-        .empty {
-            padding: 32px 20px;
-            border: 1px dashed var(--border);
-            border-radius: 12px;
-            text-align: center;
-            color: var(--muted);
-        }
-
-        .empty strong {
-            display: block;
-            color: var(--text);
-            margin-bottom: 6px;
-        }
-
-        .error-text {
-            color: var(--red);
-        }
-
-        .footer {
-            display: flex;
-            justify-content: space-between;
-            flex-wrap: wrap;
-            gap: 10px;
-            padding: 22px 0 5px;
-            color: var(--muted);
-            font-size: 11px;
-            border-top: 1px solid var(--border);
-        }
-
-        @media (max-width: 850px) {
-            .app {
-                padding: 20px;
-            }
-
-            .main-grid {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        @media (max-width: 560px) {
-            .stats {
-                grid-template-columns: 1fr;
-                gap: 10px;
-            }
-
-            .stat {
-                padding: 15px;
-            }
-
-            .stat-value {
-                font-size: 24px;
-            }
-
-            .panel {
-                padding: 16px;
-            }
-
-            .station-metrics {
-                grid-template-columns: 1fr;
-            }
-
-            #networkGraph {
-                height: 300px;
-            }
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0a1020">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+  <title>EV ChargeFinder</title>
+
+  <link rel="manifest" href="/static/manifest.webmanifest">
+  <link rel="icon" href="/static/icons/ev-icon.svg" type="image/svg+xml">
+
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0a1020;
+      --panel: #121c30;
+      --panel2: #17243a;
+      --border: #293952;
+      --text: #f3f6ff;
+      --muted: #9aacc9;
+      --green: #a5f36b;
+      --blue: #78b7ff;
+      --red: #ff8b8b;
+      --radius: 18px;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: Inter, system-ui, -apple-system, Segoe UI, sans-serif;
+      line-height: 1.5;
+    }
+
+    button, input, select { font: inherit; }
+
+    button { cursor: pointer; }
+
+    .app {
+      max-width: 1250px;
+      margin: auto;
+      padding: 22px;
+      padding-bottom: calc(35px + env(safe-area-inset-bottom));
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      padding: 8px 0 22px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .brand { display: flex; align-items: center; gap: 13px; }
+
+    .logo {
+      width: 48px;
+      height: 48px;
+      border-radius: 15px;
+      background: var(--green);
+      color: var(--bg);
+      display: grid;
+      place-items: center;
+      font-size: 29px;
+      font-weight: 900;
+    }
+
+    h1, h2, h3, p { margin-top: 0; }
+    h1 { font-size: 20px; margin-bottom: 2px; }
+    h2 { font-size: 18px; }
+    h3 { font-size: 15px; }
+    .muted { color: var(--muted); }
+    .small { font-size: 12px; }
+    .status { font-size: 12px; color: var(--green); }
+
+    .hero { padding: 34px 0 25px; }
+    .eyebrow {
+      color: var(--green);
+      text-transform: uppercase;
+      font-size: 11px;
+      letter-spacing: 2px;
+      font-weight: 800;
+    }
+
+    .hero h2 {
+      font-size: clamp(30px, 5vw, 49px);
+      letter-spacing: -1.7px;
+      line-height: 1.12;
+      margin: 12px 0;
+    }
+
+    .hero h2 span { color: var(--green); }
+    .hero p { color: var(--muted); max-width: 650px; }
+
+    .button {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 11px 15px;
+      color: var(--text);
+      background: var(--panel2);
+      font-weight: 700;
+    }
+
+    .button.primary {
+      background: var(--green);
+      color: #101b10;
+      border-color: var(--green);
+    }
+
+    .button:active { transform: scale(.98); }
+    .button:disabled { opacity: .55; cursor: wait; }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      margin-bottom: 22px;
+    }
+
+    .stat, .panel {
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 19px;
+      min-width: 0;
+    }
+
+    .stat strong {
+      display: block;
+      font-size: 29px;
+      margin: 5px 0;
+    }
+
+    .layout {
+      display: grid;
+      grid-template-columns: minmax(260px, 340px) minmax(0, 1fr);
+      gap: 20px;
+      align-items: start;
+    }
+
+    .stack { display: grid; gap: 18px; }
+    .panel-heading {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    label {
+      display: block;
+      color: var(--muted);
+      font-size: 13px;
+      margin: 14px 0 7px;
+    }
+
+    input, select {
+      width: 100%;
+      min-height: 45px;
+      border: 1px solid var(--border);
+      border-radius: 11px;
+      background: var(--bg);
+      color: var(--text);
+      padding: 10px 12px;
+    }
+
+    input:focus, select:focus, button:focus-visible {
+      outline: 2px solid var(--green);
+      outline-offset: 2px;
+    }
+
+    .two-cols {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+
+    .full { width: 100%; margin-top: 17px; }
+    .divider { border: 0; border-top: 1px solid var(--border); margin: 20px 0; }
+
+    .graph {
+      width: 100%;
+      min-height: 320px;
+      border-radius: 14px;
+      background:
+        radial-gradient(circle at 1px 1px, #2b3a53 1px, transparent 0);
+      background-size: 23px 23px;
+      border: 1px solid var(--border);
+      overflow: hidden;
+    }
+
+    .graph svg { width: 100%; height: auto; display: block; }
+    .edge { stroke: #50627e; stroke-width: 4; }
+    .edge.route { stroke: var(--green); stroke-width: 6; }
+    .edge-label { fill: var(--muted); font-size: 14px; text-anchor: middle; }
+    .node { fill: var(--green); stroke: #294536; stroke-width: 3; }
+    .node.route { stroke: white; stroke-width: 4; }
+    .node-label { fill: var(--text); font-size: 15px; text-anchor: middle; }
+
+    .route-info {
+      background: #1c2c3b;
+      border-radius: 12px;
+      padding: 13px;
+      margin-top: 14px;
+      overflow-wrap: anywhere;
+    }
+
+    .route-info strong { color: var(--green); }
+    .station-list { display: grid; gap: 12px; }
+
+    .station {
+      background: var(--panel2);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 15px;
+    }
+
+    .station-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 10px;
+    }
+
+    .station h3 { margin-bottom: 5px; }
+    .price { color: var(--green); font-weight: 800; white-space: nowrap; }
+    .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+
+    .tag {
+      padding: 4px 8px;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--muted);
+      font-size: 11px;
+    }
+
+    .station button { margin-top: 12px; width: 100%; }
+
+    .battery-number {
+      font-size: 35px;
+      font-weight: 850;
+      color: var(--green);
+    }
+
+    .progress {
+      height: 9px;
+      background: #26354b;
+      border-radius: 99px;
+      overflow: hidden;
+      margin: 10px 0 16px;
+    }
+
+    .progress div {
+      height: 100%;
+      width: 80%;
+      background: var(--green);
+      transition: width .2s;
+    }
+
+    .battery-results {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 10px;
+      margin-top: 15px;
+    }
+
+    .battery-results > div {
+      background: var(--bg);
+      border-radius: 11px;
+      padding: 11px;
+      min-width: 0;
+    }
+
+    .battery-results strong { display: block; font-size: 17px; }
+    .battery-results span { font-size: 11px; color: var(--muted); }
+
+    .notice {
+      padding: 12px;
+      border-radius: 11px;
+      background: #1d2b40;
+      color: var(--muted);
+      font-size: 13px;
+      overflow-wrap: anywhere;
+    }
+
+    .error { color: var(--red); }
+    .success { color: var(--green); }
+
+    footer {
+      margin-top: 25px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .bottom-nav { display: none; }
+
+    @media (max-width: 760px) {
+      .app { padding: 15px; padding-bottom: calc(90px + env(safe-area-inset-bottom)); }
+      header { padding-bottom: 15px; }
+      .logo { width: 42px; height: 42px; }
+      .hero { padding: 25px 0 18px; }
+      .hero h2 { font-size: 34px; }
+      .stats { gap: 8px; }
+      .stat { padding: 12px; border-radius: 14px; }
+      .stat strong { font-size: 23px; }
+      .stat .muted { font-size: 11px; }
+      .layout { grid-template-columns: 1fr; gap: 15px; }
+      .panel { padding: 15px; }
+      .graph { min-height: 260px; }
+      .battery-results { gap: 7px; }
+      .battery-results > div { padding: 9px; }
+      .battery-results strong { font-size: 15px; }
+      .bottom-nav {
+        display: flex;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        z-index: 10;
+        justify-content: space-around;
+        gap: 4px;
+        padding: 10px 8px calc(10px + env(safe-area-inset-bottom));
+        background: #0d1627f5;
+        border-top: 1px solid var(--border);
+        backdrop-filter: blur(15px);
+      }
+      .bottom-nav a {
+        color: var(--muted);
+        text-decoration: none;
+        font-size: 11px;
+        text-align: center;
+        padding: 5px;
+      }
+      .bottom-nav a span { display: block; font-size: 19px; }
+    }
+
+    @media (max-width: 380px) {
+      .stats { grid-template-columns: 1fr; }
+      .stat strong { display: inline-block; margin-left: 8px; }
+      .two-cols { grid-template-columns: 1fr; }
+    }
+  </style>
 </head>
 
 <body>
 <div class="app">
+  <header>
+    <div class="brand">
+      <div class="logo">ϟ</div>
+      <div>
+        <h1>EV ChargeFinder</h1>
+        <div class="muted small">Intelligent charging discovery</div>
+      </div>
+    </div>
+    <div class="status" id="connectionStatus">● DEMO NETWORK</div>
+  </header>
 
-    <header class="topbar">
-        <div class="brand">
-            <div class="brand-icon">ϟ</div>
-            <div>
-                <h1>EV ChargeFinder</h1>
-                <p>Intelligent charging discovery</p>
-            </div>
+  <section class="hero">
+    <div class="eyebrow">Electric mobility · simplified</div>
+    <h2>Find your next <span>charge.</span></h2>
+    <p>Explore charging stations, compare routes, estimate battery range and demonstrate graph-based shortest-path algorithms.</p>
+  </section>
+
+  <section class="stats" aria-label="Network summary">
+    <div class="stat">
+      <div class="muted small">Network junctions</div>
+      <strong id="nodeCount">4</strong>
+      <div class="muted small">Nodes in sample graph</div>
+    </div>
+    <div class="stat">
+      <div class="muted small">Stations in dataset</div>
+      <strong id="stationCount">3</strong>
+      <div class="muted small">Simulated stations</div>
+    </div>
+    <div class="stat">
+      <div class="muted small">Matching stations</div>
+      <strong id="availableCount">—</strong>
+      <div class="muted small">Based on your filters</div>
+    </div>
+  </section>
+
+  <div class="layout">
+    <div class="stack">
+      <section class="panel" id="search">
+        <div class="panel-heading">
+          <h2>Find a charger</h2>
+          <span>⚡</span>
         </div>
-        <div class="demo-badge">● DEMO NETWORK</div>
-    </header>
+        <p class="muted small">Customize your search and ranking.</p>
 
-    <section class="hero">
-        <div class="eyebrow">Electric mobility · Simplified</div>
-        <h2>Find your next <span>charge.</span></h2>
-        <p>
-            Discover compatible charging stations and explore efficient
-            routes powered by graph-based shortest-path algorithms.
-        </p>
-    </section>
+        <form id="searchForm">
+          <label for="start">Starting junction</label>
+          <select id="start" name="start">
+            <option value="A">Junction A</option>
+            <option value="B" selected>Junction B</option>
+            <option value="C">Junction C</option>
+            <option value="D">Junction D</option>
+          </select>
 
-    <section class="stats">
-        <div class="stat">
-            <div class="stat-label">Network junctions</div>
-            <div class="stat-value">{{ nodes|length }}</div>
-            <div class="stat-note">Nodes in the sample graph</div>
+          <label for="connector">Connector compatibility</label>
+          <select id="connector" name="connector">
+            <option value="">All connector types</option>
+            <option value="CCS2">CCS2</option>
+            <option value="Type2">Type 2</option>
+          </select>
+
+          <label for="ranking">Ranking preference</label>
+          <select id="ranking" name="ranking">
+            <option value="balanced">Balanced</option>
+            <option value="distance">Shortest route</option>
+            <option value="cost">Lowest charging cost</option>
+          </select>
+
+          <label for="minPower">Minimum charging power (kW)</label>
+          <select id="minPower" name="min_power">
+            <option value="0">Any power</option>
+            <option value="20">20 kW or more</option>
+            <option value="50">50 kW or more</option>
+            <option value="100">100 kW or more</option>
+          </select>
+
+          <button class="button primary full" id="searchButton" type="submit">Find charging stations →</button>
+        </form>
+
+        <hr class="divider">
+        <div class="muted small">Data source: fictional sample network for DSA demonstration.</div>
+      </section>
+
+      <section class="panel" id="battery">
+        <div class="panel-heading">
+          <h2>Battery simulator</h2>
+          <span>🔋</span>
         </div>
-        <div class="stat">
-            <div class="stat-label">Stations in dataset</div>
-            <div class="stat-value" id="stationCount">—</div>
-            <div class="stat-note">Fictional sample stations</div>
-        </div>
-        <div class="stat">
-            <div class="stat-label">Available stations</div>
-            <div class="stat-value" id="availableCount">—</div>
-            <div class="stat-note">Based on sample port data</div>
-        </div>
-    </section>
+        <p class="muted small">Estimate range, remaining energy and charging cost.</p>
 
-    <div class="main-grid">
+        <label for="capacity">Battery capacity (kWh)</label>
+        <input id="capacity" type="number" min="1" max="300" value="60">
 
-        <aside class="panel">
-            <div class="panel-heading">
-                <div>
-                    <h3>Find a charger</h3>
-                    <p>Customize your search</p>
-                </div>
-                <span>⚡</span>
-            </div>
+        <label for="soc">Current battery level (%)</label>
+        <input id="soc" type="range" min="0" max="100" value="80">
+        <div class="battery-number"><span id="socLabel">80</span>%</div>
+        <div class="progress"><div id="batteryBar"></div></div>
 
-            <form id="searchForm">
-                <div class="field">
-                    <label for="start">Starting junction</label>
-                    <select id="start" name="start">
-                        {% for node in nodes %}
-                        <option value="{{ node }}">{{ node }}</option>
-                        {% endfor %}
-                    </select>
-                </div>
-
-                <div class="field">
-                    <label for="connector">Connector compatibility</label>
-                    <select id="connector" name="connector">
-                        <option value="">All connector types</option>
-                        <option value="CCS2">CCS2</option>
-                        <option value="Type2">Type 2</option>
-                    </select>
-                </div>
-
-                <button class="primary-btn" id="searchButton" type="submit">
-                    Find charging stations →
-                </button>
-
-                <p class="hint">
-                    Only available stations compatible with your selected
-                    connector are displayed.
-                </p>
-
-                <div id="status" class="status" role="status"
-                     aria-live="polite"></div>
-            </form>
-        </aside>
-
-        <div>
-            <section class="panel network-panel">
-                <div class="panel-heading">
-                    <div>
-                        <h3>Interactive road network</h3>
-                        <p>Road weights represent distances in kilometres</p>
-                    </div>
-                    <span class="count-pill">GRAPH VIEW</span>
-                </div>
-
-                <div id="networkGraph"></div>
-
-                <div class="legend">
-                    <div class="legend-item">
-                        <span class="legend-dot"></span>
-                        Junction
-                    </div>
-                    <div class="legend-item">
-                        <span class="legend-dot route-dot"></span>
-                        Route junction
-                    </div>
-                    <div class="legend-item">
-                        <span class="legend-line"></span>
-                        Shortest route
-                    </div>
-                </div>
-
-                <p id="graphStatus" class="hint">
-                    Search for stations to highlight the shortest route
-                    to the nearest available compatible station.
-                </p>
-            </section>
-
-            <section class="panel">
-                <div class="results-heading">
-                    <div>
-                        <h3>Recommended stations</h3>
-                        <p>Ranked by route distance, then price</p>
-                    </div>
-                    <span class="count-pill" id="resultCount">
-                        Ready to search
-                    </span>
-                </div>
-
-                <div class="station-list" id="results">
-                    <div class="empty">
-                        <strong>Your next charge starts here</strong>
-                        Select a junction and search to discover stations.
-                    </div>
-                </div>
-            </section>
+        <div class="two-cols">
+          <div>
+            <label for="consumption">Consumption (kWh/100 km)</label>
+            <input id="consumption" type="number" min="1" max="100" value="18">
+          </div>
+          <div>
+            <label for="reserve">Reserve battery (%)</label>
+            <input id="reserve" type="number" min="0" max="100" value="10">
+          </div>
         </div>
 
+        <label for="targetSoc">Target charging level (%)</label>
+        <input id="targetSoc" type="number" min="1" max="100" value="80">
+
+        <div class="battery-results">
+          <div><strong id="rangeResult">—</strong><span>Estimated km</span></div>
+          <div><strong id="energyResult">—</strong><span>Usable kWh</span></div>
+          <div><strong id="chargeResult">—</strong><span>Energy to target</span></div>
+        </div>
+
+        <div class="notice" style="margin-top:12px">
+          Estimates assume constant consumption. Actual range and charging time vary by vehicle, speed, weather and charger behavior.
+        </div>
+        <button class="button full" id="updateBattery" type="button">Update battery estimate</button>
+      </section>
     </div>
 
-    <footer class="footer">
-        <span>EV ChargeFinder · DSA engineering project</span>
-        <span>Python · Flask · Dijkstra · BFS</span>
-    </footer>
+    <div class="stack">
+      <section class="panel" id="map">
+        <div class="panel-heading">
+          <div>
+            <h2>Interactive road network</h2>
+            <div class="muted small">Illustrative graph · edge weights represent kilometres</div>
+          </div>
+          <span class="tag">GRAPH VIEW</span>
+        </div>
 
+        <div class="graph">
+          <svg viewBox="0 0 600 360" role="img" aria-label="Sample road network with junctions A, B, C and D">
+            <line id="edgeAB" class="edge" x1="130" y1="105" x2="310" y2="65"/>
+            <line id="edgeAC" class="edge" x1="130" y1="105" x2="160" y2="270"/>
+            <line id="edgeBC" class="edge" x1="310" y1="65" x2="160" y2="270"/>
+            <line id="edgeBD" class="edge" x1="310" y1="65" x2="470" y2="220"/>
+            <line id="edgeCD" class="edge" x1="160" y1="270" x2="470" y2="220"/>
+
+            <text class="edge-label" x="215" y="72">2 km</text>
+            <text class="edge-label" x="120" y="195">4 km</text>
+            <text class="edge-label" x="220" y="180">1 km</text>
+            <text class="edge-label" x="407" y="125">5 km</text>
+            <text class="edge-label" x="318" y="270">2 km</text>
+
+            <circle id="nodeA" class="node" cx="130" cy="105" r="22"/>
+            <circle id="nodeB" class="node" cx="310" cy="65" r="22"/>
+            <circle id="nodeC" class="node" cx="160" cy="270" r="22"/>
+            <circle id="nodeD" class="node" cx="470" cy="220" r="22"/>
+
+            <text class="node-label" x="130" y="145">A</text>
+            <text class="node-label" x="310" y="105">B</text>
+            <text class="node-label" x="160" y="310">C</text>
+            <text class="node-label" x="470" y="260">D</text>
+          </svg>
+        </div>
+
+        <div class="route-info" id="routeInfo">
+          <strong>Route planner</strong>
+          <div class="muted small" style="margin-top:5px">Choose a starting junction and find a station to highlight the shortest route in the sample graph.</div>
+        </div>
+
+        <div class="notice" style="margin-top:12px">
+          This is a graph visualization, not a live street map. Real geographic routing requires map data and a routing service.
+        </div>
+      </section>
+
+      <section class="panel" id="stations">
+        <div class="panel-heading">
+          <h2>Recommended stations</h2>
+          <span class="tag" id="resultCount">Waiting for search</span>
+        </div>
+        <p class="muted small">Ranked results from your Flask backend.</p>
+        <div id="stationList" class="station-list">
+          <div class="notice">Loading station recommendations…</div>
+        </div>
+      </section>
+
+      <section class="panel" id="algorithm">
+        <h2>DSA laboratory</h2>
+        <p class="muted small">Algorithms powering this demonstration.</p>
+        <div class="tags">
+          <span class="tag">Dijkstra · shortest path</span>
+          <span class="tag">Priority queue · heapq</span>
+          <span class="tag">BFS · graph traversal</span>
+          <span class="tag">Ranking · sorting</span>
+        </div>
+        <div class="route-info" id="algorithmInfo">
+          Select a station to inspect the route returned by the backend.
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <footer>
+    EV ChargeFinder · College DSA project · Simulated charging network.
+    Route distances and charging estimates are demonstrations, not live navigation or real-time station availability.
+  </footer>
 </div>
 
+<nav class="bottom-nav" aria-label="Quick navigation">
+  <a href="#search"><span>⌕</span>Search</a>
+  <a href="#map"><span>⌖</span>Network</a>
+  <a href="#stations"><span>⚡</span>Stations</a>
+  <a href="#battery"><span>▰</span>Battery</a>
+</nav>
+
 <script>
-    const form = document.getElementById("searchForm");
-    const results = document.getElementById("results");
-    const statusBox = document.getElementById("status");
-    const searchButton = document.getElementById("searchButton");
-    const resultCount = document.getElementById("resultCount");
-    const graphStatus = document.getElementById("graphStatus");
+"use strict";
 
-    // The sample network must match data/network.json.
-    // The Python backend still calculates the actual shortest routes.
-    let cy = null;
+const $ = id => document.getElementById(id);
 
-    const graphNodes = [
-        { data: { id: "A", label: "A" }, position: { x: 70, y: 100 } },
-        { data: { id: "B", label: "B" }, position: { x: 220, y: 65 } },
-        { data: { id: "C", label: "C" }, position: { x: 220, y: 230 } },
-        { data: { id: "D", label: "D" }, position: { x: 390, y: 150 } }
-    ];
+const graphEdges = [
+  ["A", "B", 2, "edgeAB"],
+  ["A", "C", 4, "edgeAC"],
+  ["B", "C", 1, "edgeBC"],
+  ["B", "D", 5, "edgeBD"],
+  ["C", "D", 2, "edgeCD"]
+];
 
-    const graphEdges = [
-        { data: { id: "AB", source: "A", target: "B", weight: 2 } },
-        { data: { id: "AC", source: "A", target: "C", weight: 4 } },
-        { data: { id: "BC", source: "B", target: "C", weight: 1 } },
-        { data: { id: "BD", source: "B", target: "D", weight: 5 } },
-        { data: { id: "CD", source: "C", target: "D", weight: 2 } }
-    ];
+let currentStations = [];
 
-    function initializeGraph() {
-        if (typeof cytoscape === "undefined") {
-            graphStatus.textContent =
-                "Graph library did not load. Check your internet connection.";
-            return;
-        }
+function numberValue(id, fallback) {
+  const value = Number($(id).value);
+  return Number.isFinite(value) ? value : fallback;
+}
 
-        cy = cytoscape({
-            container: document.getElementById("networkGraph"),
-            elements: [...graphNodes, ...graphEdges],
+function escapeHTML(value) {
+  return String(value ?? "").replace(/[&<>"']/g, char => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;"
+  })[char]);
+}
 
-            layout: {
-                name: "preset",
-                fit: true,
-                padding: 35
-            },
+function money(value) {
+  const n = Number(value);
+  return Number.isFinite(n) ? "₹" + n.toFixed(2) : "—";
+}
 
-            style: [
-                {
-                    selector: "node",
-                    style: {
-                        "label": "data(label)",
-                        "background-color": "#9af56b",
-                        "color": "#edf4ff",
-                        "text-valign": "bottom",
-                        "text-margin-y": 8,
-                        "font-size": 15,
-                        "width": 36,
-                        "height": 36,
-                        "border-width": 2,
-                        "border-color": "#203b2b"
-                    }
-                },
-                {
-                    selector: "edge",
-                    style: {
-                        "label": "data(weight)",
-                        "width": 3,
-                        "line-color": "#465875",
-                        "curve-style": "bezier",
-                        "color": "#b6c7df",
-                        "font-size": 12,
-                        "text-background-color": "#0b1120",
-                        "text-background-opacity": 1,
-                        "text-background-padding": 3
-                    }
-                },
-                {
-                    selector: ".route-node",
-                    style: {
-                        "background-color": "#70b8ff",
-                        "border-color": "#ffffff",
-                        "border-width": 3
-                    }
-                },
-                {
-                    selector: ".route-edge",
-                    style: {
-                        "line-color": "#9af56b",
-                        "width": 6,
-                        "z-index": 10
-                    }
-                },
-                {
-                    selector: ".start-node",
-                    style: {
-                        "background-color": "#9af56b",
-                        "border-color": "#ffffff",
-                        "border-width": 4
-                    }
-                }
-            ]
-        });
+function getStationName(station) {
+  return station.name || station.station_name || station.id || "Charging station";
+}
 
-        cy.fit(undefined, 35);
+function getStationNode(station) {
+  return station.node || station.junction || station.location_node || "";
+}
+
+function getDistance(station) {
+  const value = station.distance_km ?? station.distance ?? station.route_distance;
+  const n = Number(value);
+  return Number.isFinite(n) ? n : null;
+}
+
+function getPower(station) {
+  const n = Number(station.power_kw ?? station.power ?? station.charging_power);
+  return Number.isFinite(n) ? n : null;
+}
+
+function getPrice(station) {
+  const n = Number(station.price_per_kwh ?? station.price ?? station.cost_per_kwh);
+  return Number.isFinite(n) ? n : null;
+}
+
+function getConnectors(station) {
+  const value = station.connectors || station.connector_types || station.connector || [];
+  if (Array.isArray(value)) return value.map(String);
+  if (typeof value === "string" && value) return [value];
+  return [];
+}
+
+function getPorts(station) {
+  const n = Number(station.available_ports ?? station.ports_available ?? station.ports);
+  return Number.isFinite(n) ? n : null;
+}
+
+function drawRoute(start, target) {
+  const distance = {};
+  const previous = {};
+  const unvisited = new Set(["A", "B", "C", "D"]);
+
+  for (const node of unvisited) distance[node] = Infinity;
+  distance[start] = 0;
+
+  while (unvisited.size) {
+    let current = null;
+
+    for (const node of unvisited) {
+      if (current === null || distance[node] < distance[current]) current = node;
     }
 
-    function highlightRoute(route, start) {
-        if (!cy) return;
+    if (current === null || distance[current] === Infinity) break;
+    unvisited.delete(current);
 
-        cy.elements().removeClass("route-node route-edge start-node");
+    if (current === target) break;
 
-        if (!route || route.length === 0) {
-            graphStatus.textContent =
-                "No reachable route to display.";
-            return;
-        }
+    for (const [a, b, weight] of graphEdges) {
+      const neighbor = a === current ? b : b === current ? a : null;
+      if (!neighbor || !unvisited.has(neighbor)) continue;
 
-        route.forEach(node => {
-            cy.getElementById(node).addClass("route-node");
-        });
-
-        cy.getElementById(start).addClass("start-node");
-
-        for (let i = 0; i < route.length - 1; i++) {
-            const from = route[i];
-            const to = route[i + 1];
-
-            const edge = cy.edges().filter(item =>
-                (item.data("source") === from &&
-                 item.data("target") === to) ||
-                (item.data("source") === to &&
-                 item.data("target") === from)
-            );
-
-            edge.addClass("route-edge");
-        }
-
-        graphStatus.textContent =
-            "Highlighted shortest route: " + route.join(" → ");
+      const candidate = distance[current] + weight;
+      if (candidate < distance[neighbor]) {
+        distance[neighbor] = candidate;
+        previous[neighbor] = current;
+      }
     }
+  }
 
-    function createElement(tag, className, text) {
-        const element = document.createElement(tag);
-        if (className) element.className = className;
-        if (text !== undefined) element.textContent = text;
-        return element;
+  const path = [];
+  let current = target;
+
+  if (start === target) path.push(start);
+  else if (distance[target] !== Infinity) {
+    while (current) {
+      path.unshift(current);
+      if (current === start) break;
+      current = previous[current];
     }
+  }
 
-    function createMetric(label, value) {
-        const metric = createElement("div", "metric");
-        metric.append(
-            createElement("div", "metric-label", label),
-            createElement("div", "metric-value", value)
-        );
-        return metric;
+  graphEdges.forEach(([a, b, , id]) => {
+    $(id).classList.remove("route");
+    if (path.includes(a) && path.includes(b) &&
+        Math.abs(path.indexOf(a) - path.indexOf(b)) === 1) {
+      $(id).classList.add("route");
     }
+  });
 
-    function renderStation(station, start) {
-        const card = createElement("article", "station");
-        const top = createElement("div", "station-top");
-        const identity = createElement("div");
+  ["A", "B", "C", "D"].forEach(node => {
+    $("node" + node).classList.toggle("route", path.includes(node));
+  });
 
-        identity.append(
-            createElement("h4", "", station.name),
-            createElement(
-                "div",
-                "station-id",
-                `${station.id} · ${station.connectors.join(", ")}`
-            )
-        );
+  return {
+    path,
+    distance: distance[target]
+  };
+}
 
-        top.append(
-            identity,
-            createElement(
-                "span",
-                "available",
-                `${station.available_ports} port(s) available`
-            )
-        );
+function resetGraph(start) {
+  graphEdges.forEach(([, , , id]) => $(id).classList.remove("route"));
+  ["A", "B", "C", "D"].forEach(node => {
+    $("node" + node).classList.toggle("route", node === start);
+  });
+}
 
-        const metrics = createElement("div", "station-metrics");
-        metrics.append(
-            createMetric("ROUTE DISTANCE", `${station.distance_km} km`),
-            createMetric("CHARGING POWER", `${station.power_kw} kW`),
-            createMetric("PRICE PER kWh", `₹${station.price_per_kwh}`)
-        );
+function showRoute(station) {
+  const start = $("start").value;
+  const target = getStationNode(station);
+  const name = getStationName(station);
 
-        const route = createElement("div", "route");
-        route.append(
-            createElement("span", "route-label", "SHORTEST ROUTE"),
-            createElement("span", "route-path", station.route.join(" → "))
-        );
+  if (!["A", "B", "C", "D"].includes(target)) {
+    $("routeInfo").innerHTML =
+      "<strong>" + escapeHTML(name) + "</strong>" +
+      '<div class="muted small">This station has no junction in the sample graph, so its route cannot be drawn.</div>';
+    $("algorithmInfo").textContent =
+      "The station record does not contain a graph junction.";
+    resetGraph(start);
+    return;
+  }
 
-        card.append(top, metrics, route);
+  const route = drawRoute(start, target);
 
-        // Clicking a station highlights its own route.
-        card.style.cursor = "pointer";
-        card.title = "Click to highlight this station's route";
+  if (!route.path.length) {
+    $("routeInfo").innerHTML = "<strong>No route found.</strong>";
+    return;
+  }
 
-        card.addEventListener("click", () => {
-            highlightRoute(station.route, start);
-        });
+  $("routeInfo").innerHTML =
+    "<strong>Shortest route: " + escapeHTML(route.path.join(" → ")) + "</strong>" +
+    '<div class="muted small" style="margin-top:5px">Destination: ' +
+    escapeHTML(name) + " · Graph distance: " + route.distance +
+    " km</div>";
 
-        return card;
-    }
+  $("algorithmInfo").textContent =
+    "Dijkstra-style shortest-path result: " +
+    route.path.join(" → ") + ". Total graph weight: " +
+    route.distance + " km. This uses the illustrative graph weights.";
+}
 
-    async function loadSummary() {
-        try {
-            // Use a valid sample junction for the summary.
-            const response = await fetch("/api/stations?start=A");
+function renderStations(stations) {
+  currentStations = Array.isArray(stations) ? stations : [];
+  $("availableCount").textContent = currentStations.length;
+  $("resultCount").textContent = currentStations.length + " results";
 
-            if (!response.ok) {
-                throw new Error("Unable to load summary");
-            }
+  if (!currentStations.length) {
+    $("stationList").innerHTML =
+      '<div class="notice">No matching stations were returned. Try another connector or a lower minimum-power filter.</div>';
+    $("routeInfo").innerHTML =
+      "<strong>No matching stations</strong><div class='muted small'>Change your search filters to continue.</div>";
+    resetGraph($("start").value);
+    return;
+  }
 
-            const data = await response.json();
+  $("stationList").innerHTML = currentStations.map((station, index) => {
+    const name = escapeHTML(getStationName(station));
+    const node = escapeHTML(getStationNode(station) || "Unknown junction");
+    const distance = getDistance(station);
+    const power = getPower(station);
+    const price = getPrice(station);
+    const ports = getPorts(station);
+    const connectors = getConnectors(station);
+    const reachable = station.reachable !== false;
 
-            document.getElementById("availableCount").textContent =
-                data.count;
+    const routeLabel = distance === null ? "Route distance unavailable" :
+      distance.toFixed(1) + " km away";
 
-            // The API excludes unavailable and incompatible stations.
-            // The total station count is set from the sample dataset below.
-            document.getElementById("stationCount").textContent = "3";
-        } catch {
-            document.getElementById("availableCount").textContent = "—";
-            document.getElementById("stationCount").textContent = "3";
-        }
-    }
+    return `
+      <article class="station">
+        <div class="station-top">
+          <div>
+            <h3>${index + 1}. ${name}</h3>
+            <div class="muted small">${node} · ${escapeHTML(routeLabel)}</div>
+          </div>
+          <div class="price">${price === null ? "Price N/A" : money(price) + "/kWh"}</div>
+        </div>
+        <div class="tags">
+          <span class="tag">${power === null ? "Power N/A" : power + " kW"}</span>
+          <span class="tag">${ports === null ? "Ports N/A" : ports + " ports"}</span>
+          ${connectors.map(c => `<span class="tag">${escapeHTML(c)}</span>`).join("")}
+          <span class="tag">${reachable ? "Reachable" : "Check reachability"}</span>
+        </div>
+        <button class="button" type="button" data-station-index="${index}">
+          Show route and details →
+        </button>
+      </article>
+    `;
+  }).join("");
 
-    form.addEventListener("submit", async event => {
-        event.preventDefault();
+  $("stationList").querySelectorAll("[data-station-index]").forEach(button => {
+    button.addEventListener("click", () => {
+      const station = currentStations[Number(button.dataset.stationIndex)];
+      if (station) {
+        showRoute(station);
+        $("map").scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+    });
+  });
 
-        const start = document.getElementById("start").value;
-        const connector = document.getElementById("connector").value;
+  const first = currentStations.find(station =>
+    ["A", "B", "C", "D"].includes(getStationNode(station))
+  );
 
-        searchButton.disabled = true;
-        searchButton.textContent = "Calculating routes...";
-        statusBox.textContent = "Finding compatible stations...";
-        resultCount.textContent = "Searching";
-        results.replaceChildren();
+  if (first) showRoute(first);
+}
 
-        try {
-            const params = new URLSearchParams({ start, connector });
-            const response = await fetch(`/api/stations?${params}`);
-            const data = await response.json();
+async function searchStations(event) {
+  if (event) event.preventDefault();
 
-            if (!response.ok) {
-                throw new Error(data.error || "Station search failed.");
-            }
+  const button = $("searchButton");
+  button.disabled = true;
+  button.textContent = "Searching…";
+  $("connectionStatus").textContent = "● CONNECTING";
 
-            resultCount.textContent =
-                `${data.count} station${data.count === 1 ? "" : "s"} found`;
+  const params = new URLSearchParams({
+    start: $("start").value,
+    connector: $("connector").value,
+    ranking: $("ranking").value,
+    min_power: $("minPower").value,
+    battery_capacity: String(numberValue("capacity", 60)),
+    soc: String(numberValue("soc", 80)),
+    consumption: String(numberValue("consumption", 18)),
+    reserve: String(numberValue("reserve", 10)),
+    target_soc: String(numberValue("targetSoc", 80))
+  });
 
-            if (data.count === 0) {
-                const empty = createElement("div", "empty");
-                empty.append(
-                    createElement("strong", "", "No matching stations"),
-                    createElement(
-                        "span",
-                        "",
-                        "Try another starting junction or connector type."
-                    )
-                );
-                results.appendChild(empty);
-                highlightRoute([], start);
-            } else {
-                data.stations.forEach(station => {
-                    results.appendChild(renderStation(station, start));
-                });
-
-                // Initially highlight the nearest station's route.
-                highlightRoute(data.stations[0].route, start);
-            }
-
-            statusBox.textContent =
-                `Search completed from junction ${start}.`;
-        } catch (error) {
-            const empty = createElement("div", "empty error-text");
-            empty.append(
-                createElement("strong", "", "Search failed"),
-                createElement("span", "", error.message)
-            );
-
-            results.appendChild(empty);
-            resultCount.textContent = "Error";
-            statusBox.textContent = "Please try again.";
-        } finally {
-            searchButton.disabled = false;
-            searchButton.textContent = "Find charging stations →";
-        }
+  try {
+    const response = await fetch("/api/stations?" + params.toString(), {
+      headers: { "Accept": "application/json" }
     });
 
-    initializeGraph();
-    loadSummary();
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.error || "Station search failed (" + response.status + ")");
+    }
+
+    renderStations(data.stations || []);
+    $("connectionStatus").textContent = "● API CONNECTED";
+    $("connectionStatus").className = "status";
+  } catch (error) {
+    $("connectionStatus").textContent = "● API ERROR";
+    $("stationList").innerHTML =
+      '<div class="notice error">' + escapeHTML(error.message) +
+      '<br><br>Check that Flask is running and that the station API works.</div>';
+    $("availableCount").textContent = "—";
+    $("resultCount").textContent = "Request failed";
+  } finally {
+    button.disabled = false;
+    button.textContent = "Find charging stations →";
+  }
+}
+
+function updateBattery() {
+  const capacity = numberValue("capacity", 60);
+  const soc = numberValue("soc", 80);
+  const consumption = numberValue("consumption", 18);
+  const reserve = numberValue("reserve", 10);
+  const target = numberValue("targetSoc", 80);
+
+  $("socLabel").textContent = soc;
+  $("batteryBar").style.width = Math.max(0, Math.min(100, soc)) + "%";
+
+  if (capacity <= 0 || consumption <= 0 ||
+      soc < 0 || soc > 100 ||
+      reserve < 0 || reserve > 100 ||
+      target <= 0 || target > 100) {
+    $("rangeResult").textContent = "—";
+    $("energyResult").textContent = "—";
+    $("chargeResult").textContent = "—";
+    return;
+  }
+
+  const currentEnergy = capacity * soc / 100;
+  const usableEnergy = capacity * Math.max(0, soc - reserve) / 100;
+  const range = usableEnergy / consumption * 100;
+  const energyToTarget = capacity * Math.max(0, target - soc) / 100;
+
+  $("rangeResult").textContent = Math.round(range) + " km";
+  $("energyResult").textContent = usableEnergy.toFixed(1);
+  $("chargeResult").textContent = energyToTarget.toFixed(1) + " kWh";
+
+  $("algorithmInfo").textContent =
+    "Battery estimate: " + currentEnergy.toFixed(1) +
+    " kWh currently stored. After reserving " + reserve +
+    "%, estimated range is " + Math.round(range) +
+    " km at " + consumption + " kWh/100 km. Energy needed to reach " +
+    target + "%: " + energyToTarget.toFixed(1) + " kWh.";
+}
+
+$("searchForm").addEventListener("submit", searchStations);
+$("updateBattery").addEventListener("click", () => {
+  updateBattery();
+  searchStations();
+});
+
+["capacity", "soc", "consumption", "reserve", "targetSoc"].forEach(id => {
+  $(id).addEventListener("input", updateBattery);
+});
+
+$("start").addEventListener("change", () => {
+  resetGraph($("start").value);
+});
+
+async function registerPWA() {
+  if (!("serviceWorker" in navigator)) {
+    console.warn("This browser does not support service workers.");
+    return;
+  }
+
+  try {
+    const registration = await navigator.serviceWorker.register(
+      "/service-worker.js",
+      { scope: "/" }
+    );
+    console.log("EV ChargeFinder service worker registered:", registration.scope);
+  } catch (error) {
+    console.error("Service worker registration failed:", error);
+  }
+}
+
+window.addEventListener("load", () => {
+  updateBattery();
+  searchStations();
+  registerPWA();
+});
 </script>
 </body>
 </html>
